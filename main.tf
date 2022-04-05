@@ -46,8 +46,8 @@ resource "aws_iam_role" "lambda_exec" {
 data "archive_file" "lambda_hello_world" {
   type = "zip"
 
-  source_dir  = "${path.module}/../src"
-  output_path = "${path.module}/../src.zip"
+  source_dir  = "${path.module}/src"
+  output_path = "${path.module}/files/src.zip"
 }
 
 resource "aws_lambda_function" "hello_world" {
