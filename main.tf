@@ -26,19 +26,39 @@ provider "aws" {
   region = "us-east-2"
 }
 
+data "aws_iam_policy_document" "lambda_exec" {
+  statement {
+    actions   = ["s3:PutObject"]
+    effect    = "Allow"
+    resources = ["arn:aws:s3:::blog-content.craigkaminski.org"]
+  }
+}
+
+resource "aws_iam_policy" "lambda_exec" {
+  name   = "serverless_lambda"
+  policy = data.aws_iam_policy_document.lambda_exec.json
+}
+
 resource "aws_iam_role" "lambda_exec" {
   name = "serverless_lambda"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Action   = "s3:PutObject"
-      Effect   = "Allow"
-      Sid      = ""
-      Resource = "arn:aws:s3:::blog-content.craigkaminski.org/*"
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Sid    = ""
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
       }
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_exec" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = aws_iam_policy.lambda_exec.arn
 }
 
 data "archive_file" "lambda_hello_world" {
